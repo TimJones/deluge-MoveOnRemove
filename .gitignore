@@ -1,0 +1,3 @@
+dist/*
+build/*
+MoveOnRemove.egg-info/*
