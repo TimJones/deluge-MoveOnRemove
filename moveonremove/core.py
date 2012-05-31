@@ -44,15 +44,16 @@ import deluge.configmanager
 from deluge.core.rpcserver import export
 
 DEFAULT_PREFS = {
-    "test":"NiNiNi"
+    "move_to": deluge.common.get_default_download_dir()
 }
 
 class Core(CorePluginBase):
     def enable(self):
         self.config = deluge.configmanager.ConfigManager("moveonremove.conf", DEFAULT_PREFS)
+        self.move_to = self.config["move_to"]
 
     def disable(self):
-        pass
+        self.config["move_to"] = self.move_to
 
     def update(self):
         pass
