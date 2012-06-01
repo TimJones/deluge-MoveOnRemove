@@ -38,6 +38,8 @@
 #
 
 import os
+import shutil
+import thread
 
 from deluge.log import LOG as log
 from deluge.plugins.pluginbase import CorePluginBase
@@ -107,6 +109,35 @@ class Core(CorePluginBase):
             return
 
         log.debug("MoveOnRemove: Moving '" + info["name"] + "' from '" + info["path"] + "' to '" + move_to_path + "'")
+        thread.start_new_thread(Core._thread_move, (info["path"], move_to_path, info["files"]))
+
+    @staticmethod
+    def _thread_move( path, new_path, files ):
+        for file in files:
+            old_file_path = os.path.join(path, file)
+            new_file_path = os.path.join(new_path, file)
+            log.error("MoveOnRemove: '" + old_file_path + "' to '" + new_file_path + "'")
+
+            if not os.path.exists(old_file_path):
+                log.error("MoveOnRemove: Cannot find '" + old_file_path + "'. Skipping")
+                continue
+
+            if os.path.exists(new_file_path):
+                log.error("MoveOnRemove: File '" + new_file_path + "' already exists. Skipping")
+                continue
+
+            try:
+                if not os.path.exists(os.path.dirname(new_file_path)):
+                    os.makedirs(os.path.dirname(new_file_path))
+            except Exception, e:
+                log.error("MoveOnRemove: Could not create path for '" + new_file_path + "' because " + str(e) + ". Skipping")
+                continue
+
+            try:
+                shutil.move(old_file_path, new_file_path)
+            except Exception, e:
+                log.error("MoveOnRemove: Could not move '" + new_file_path + "' because " + str(e) + ". Skipping")
+                continue
 
     @export
     def set_config(self, config):
