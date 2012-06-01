@@ -1,3 +1,4 @@
 dist/*
 build/*
 MoveOnRemove.egg-info/*
+*.pyc
