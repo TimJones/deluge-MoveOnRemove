@@ -68,13 +68,20 @@ class Core(CorePluginBase):
         """Grab all the torrent information needed to delete later"""
         log.debug("MoveOnRemove: PreTorrentRemove " + torrent_id)
 
-        info_keys = ["save_path", "move_on_completed", "move_on_completed_path"]
+        info_keys = ["save_path", "move_on_completed", "move_on_completed_path", "name"]
 
         if not torrent_id in component.get("TorrentManager").torrents:
             log.error("MoveOnRemove: Cannot retrive torrent details")
             return
 
-        self.torrents_to_move[torrent_id] = component.get("TorrentManager").torrents[torrent_id].get_status(info_keys)
+        info = component.get("TorrentManager").torrents[torrent_id].get_status(info_keys)
+        store = { "path" : info["move_on_completed_path"] if info["move_on_completed"] else info["save_path"] }
+        store["name"] = info["name"]
+        store["files"] = []
+        files = component.get("TorrentManager").torrents[torrent_id].get_files()
+        for f in files:
+            store["files"].append(f["path"])
+        self.torrents_to_move[torrent_id] = store
 
     def on_torrent_removed(self, torrent_id):
         """Verify settings before doing anything"""
@@ -94,13 +101,12 @@ class Core(CorePluginBase):
             return
 
         info = self.torrents_to_move[torrent_id]
-        path = info["move_on_completed_path"] if info["move_on_completed"] else info["save_path"]
 
-        if not os.path.exists( path ):
-            log.error("MoveOnRemove: Cannot find '" + path + "'. Move aborted")
+        if not os.path.exists( info["path"] ):
+            log.error("MoveOnRemove: Cannot find '" + info["path"] + "'. Move aborted")
             return
 
-        log.error("MoveOnRemove: Going to move '" + path + "' to '" + move_to_path + "'")
+        log.debug("MoveOnRemove: Moving '" + info["name"] + "' from '" + info["path"] + "' to '" + move_to_path + "'")
 
     @export
     def set_config(self, config):
