@@ -79,10 +79,17 @@ class Core(CorePluginBase):
         info = component.get("TorrentManager").torrents[torrent_id].get_status(info_keys)
         store = { "path" : info["move_on_completed_path"] if info["move_on_completed"] else info["save_path"] }
         store["name"] = info["name"]
+
+        """Get a list of files in the torrent, add the base directory(ies)"""
         store["files"] = []
         files = component.get("TorrentManager").torrents[torrent_id].get_files()
         for f in files:
-            store["files"].append(f["path"])
+            (head, tail) = os.path.split( f["path"])
+            while head:
+                (head, tail) = os.path.split(head)
+            if not tail in store["files"]:
+                store["files"].append(tail)
+
         self.torrents_to_move[torrent_id] = store
 
     def on_torrent_removed(self, torrent_id):
