@@ -63,7 +63,7 @@ class GtkUI(GtkPluginBase):
     def on_apply_prefs(self):
         log.debug("applying prefs for MoveOnRemove")
         config = {
-            "move_to":self.glade.get_widget("entry_move_to").get_text()
+            "move_to":self.glade.get_widget("entry_move_to").get_text().strip()
         }
         client.moveonremove.set_config(config)
 
