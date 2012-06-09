@@ -31,20 +31,44 @@ Copyright:
     statement from all source files in the program, then also delete it here.
 */
 
-MoveOnRemovePlugin = Ext.extend(Deluge.Plugin, {
-	constructor: function(config) {
-		config = Ext.apply({
-			name: "MoveOnRemove"
-		}, config);
-		MoveOnRemovePlugin.superclass.constructor.call(this, config);
-	},
+Ext.ns('Deluge.ux');
+Ext.ns('Deluge.ux.preferences');
+
+Deluge.ux.preferences.MoveOnRemovePage = Ext.extend(Ext.Panel, {
+
+	title: _('MoveOnRemove'),
+	layout: 'fit',
+	border: false,
+
+	initComponent: function() {
+		Deluge.ux.preferences.MoveOnRemovePage.superclass.initComponent.call(this);
+
+		this.form = this.add({
+			xtype: 'form',
+			layout: 'form',
+			border: false,
+			autoHeight: true
+		});
+
+		this.moveTo = this.form.add({
+			xtype: 'textfield',
+			fieldLabel: _('Move to'),
+			name: 'txt_move_to',
+			width: 210
+		});
+	}
+});
+
+Deluge.plugins.MoveOnRemovePlugin = Ext.extend(Deluge.Plugin, {
+
+	name: 'MoveOnRemove',
 
 	onDisable: function() {
-
+		deluge.preferences.removePage(this.prefsPage);
 	},
 
 	onEnable: function() {
-
+		this.prefsPage = deluge.preferences.addPage(new Deluge.ux.preferences.MoveOnRemovePage());
 	}
 });
-new MoveOnRemovePlugin();
+Deluge.registerPlugin('MoveOnRemove', Deluge.plugins.MoveOnRemovePlugin);
